@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+	<script type="text/javascript" src='/javascripts/jquery-1.6.4.min.js'></script>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <!-- Prerequisites: jQuery and jQuery UI Stylesheet -->
+	<link rel="stylesheet" type="text/css" href='/javascripts/jquery-ui.css' />
+	<script type="text/javascript" src="/javascripts/jquery-ui.js"></script>
+	<!-- Plugin files below -->
+	<link rel="stylesheet" type="text/css" href="/javascripts/TimePicker/jquery.ptTimeSelect.css" />
+	<script type="text/javascript" src="/javascripts/TimePicker/jquery.ptTimeSelect.js"></script>	
+
+		<script>
+	var update_timer;
+	var count =0;
+
+	var update = function() {
+		$.getJSON("/update",function(response) {
+			count += 1;
+			$('#air_pv').val( response.air_pv/100 );
+			$('#floor_pv').val( response.floor_pv/100 );
+			$('#air_sv_disp').text( response.air_sv );
+			$('#floor_sv_disp').text( response.floor_sv  );
+			$('#device_status').text( response.power );
+			$('#on_time_disp').text( response.auto_on_ena ? String(response.on_hour) + ':' + String(response.on_min) : "未启用");
+			$('#off_time_disp').text( response.auto_off_ena ? String(response.off_hour) + ':' + String(response.off_min) : "未启用" );
+			$('#power_btn').val(response.power ? "关机" : "开机");
+			$('#device_status').text(response.power ? "运行中" : "关闭");
+			
+		});
+		$.getJSON("/controller/status",function(response) {
+			$('#server_status').text(response.status);
+		});
+
+		$('#update_time').text(getLocalTime());
+		update_timer = setTimeout("update()", $('#update_interval').spinner("value")*1000);
+	}
+
+
+
+	$(document).ready(function()
+	{
+		$('#on_time').ptTimeSelect();		// find the input fields and apply the time select to them.
+		$('#off_time').ptTimeSelect();
+		$('#air_sv').spinner();
+		$('#floor_sv').spinner();
+		$('#update_interval').spinner();
+		$('#update_interval').spinner("value",10);
+		auto_mode();
+	});
+
+	update();
+
+	function connectClient(){
+		$.post("/controller",{ip:$('#ip').val(),port:$('#port').val()});
+	}
+
+	function setTemperature(){
+		$.post("/controller/setdevice",{
+				air_sv : $('#air_sv').spinner("value"),
+				floor_sv : $('#floor_sv').spinner("value")
+		});
+	}
+
+	function setAutoOn(){
+		var ena = 0;
+		if("checked" == $('#auto_on_ena').attr("checked"))
+		{
+			ena = 1;
+		}
+		$.post("/controller/setautoon",{
+				enable : ena,
+				time : $('#on_time').val()
+		});
+	}
+
+	function setAutoOff(){
+		var ena = 0;
+		if("checked" == $('#auto_off_ena').attr("checked"))
+		{
+			ena = 1;
+		}
+		$.post("/controller/setautooff",{
+				enable : ena,
+				time : $('#off_time').val()
+		});
+	}
+	
+	function getLocalTime()
+	{
+		var date = new Date();
+		var hour = date.getHours();
+		var min = date.getMinutes();
+		var sec = date.getSeconds();
+		return hour + ":" + min + ":" + sec;
+	}
+
+	function auto_mode()
+	{
+		if("checked" == $('#auto_on_ena').attr("checked"))  $('#on_time').removeAttr("disabled");  else $('#on_time').attr("disabled" ,"disabled") ;
+		if("checked" == $('#auto_off_ena').attr("checked")) $('#off_time').removeAttr("disabled"); else $('#off_time').attr("disabled" ,"disabled") ;
+	}
+
+	function powerOnOff()
+	{
+		if ($('#power_btn').val() == "关机")
+		{
+			
+			$.post("/connectTCPClient/power",{
+				opt: 0
+			});
+		}
+		else if($('#power_btn').val() == "开机")
+		{
+			$.post("/connectTCPClient/power",{
+				opt: 1
+			});
+		}
+	}
+  	</script>
+
+</head>
+<body>
+	<p>更新时间:<span id="update_time" value="10"></span></p>
+	<p>时间间隔:<input id="update_interval" value=""> 秒</p>
+	<p id="server_response"></p>
+
+	<div id="sever_info" class="ui-widget-content" style="padding: .5em;">
+		<p>IP:<input type="text" id="ip" value="192.168.1.247"> </p>
+		<p>Port:<input type="text" id="port" value="8080"> </p>
+		<p>服务器状态:<span id="server_status"> </span></p>
+		<p><input type="button" id="send_button" value="连接" onclick="connectClient()"></p>
+	</div>
+
+	<div id="block_1" class="ui-widget-content" style="padding: .5em;">
+		<p>设备工作状态: <span id="device_status"></span> </p>
+		<p> 室温当前值: <input type="text" id="air_pv" disabled="true"> 地板温度当前值: <input type="text" id="floor_pv" disabled="true" ></p>
+		<p> 室温设定值: <span id="air_sv_disp"></span> <input id="air_sv" max="36" min="16" > 地板温度设定值: <span id="floor_sv_disp"></span><input id="floor_sv" max="36" min="16" >
+		<input type="button" id="air_set_btn" value="set" onclick="setTemperature()"></p>
+		<p><label>启动时间:</label> <span id="on_time_disp"></span><input type="text" id="on_time" value=""> <input type="checkbox" id="auto_on_ena" onclick="auto_mode()"> <input type="button" id="air_set_btn" value="set" onclick="setAutoOn()"> </p> 
+		<p><label>关闭时间: </label> <span id="off_time_disp"></span><input type="text" id="off_time" value=""> <input type="checkbox" id="auto_off_ena" onclick="auto_mode()">  <input type="button" id="air_set_btn" value="set" onclick="setAutoOff()">   </p>
+		<p><input type="button" id="power_btn" value="关机" onclick="powerOnOff()"></p>
+	</div>
+
+</body>
+</html>

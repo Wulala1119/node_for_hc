@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" >
+	<script type="text/javascript" src='/javascripts/jquery-1.6.4.min.js'></script>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <!-- Prerequisites: jQuery and jQuery UI Stylesheet -->
+	<link rel="stylesheet" type="text/css" href='/javascripts/jquery-ui.css' />
+	<script type="text/javascript" src="/javascripts/jquery-ui.js"></script>
+	<!-- Plugin files below -->
+	<link rel="stylesheet" type="text/css" href="/javascripts/TimePicker/jquery.ptTimeSelect.css" />
+
+	<script>
+		function login(){
+			$.post("/users/login", {
+				user_id : $('#user_id').val(),
+				password : $('#password').val(),
+			}).success(function(data) {
+		       window.location = data;
+		    });
+		}
+	</script>
+
+</head>
+<body>
+	<p>
+	user_id <input type='text' id='user_id'> </br>
+	password <input type='text' id='password'> </br>
+	<input type='button' value='login' id='login' onclick='login()'> </br>
+	if you don't have any acount, please <a href='/users/signup'>sign up</a>.
+	</p>
+
+
+
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <!-- Prerequisites: jQuery and jQuery UI Stylesheet -->
+	<script type="text/javascript" src='/javascripts/jquery-1.6.4.min.js'></script>
+	<link rel="stylesheet" type="text/css" href='/javascripts/TimePicker/jquery-ui.css' />
+	<!-- Plugin files below -->
+	<link rel="stylesheet" type="text/css" href="/javascripts/TimePicker/jquery.ptTimeSelect.css" />
+	<script type="text/javascript" src="/javascripts/TimePicker/jquery.ptTimeSelect.js"></script>
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p>
+
+
+        <div id="sample1" class="ui-widget-content" style="padding: .5em;">
+        <p>
+            <label>Start</label><br/>
+            <input name="s1Time2" value="" /> <br/>
+            <label>End</label><br/>
+            <input name="s1Time2" value="" />
+        </p>
+        <p>Some extra select boxes to show to it works under IE.<br/>
+            <select>
+                <option>Option 1 here</option>
+                <option>Options 2 here</option>
+            </select><br /> <br />
+            <select>
+                <option>Option 1 here</option>
+                <option>Options 2 here</option>
+            </select>
+        </p>
+    </div>
+    
+    <script type="text/javascript">
+        $(document).ready(function(){
+            // find the input fields and apply the time select to them.
+            $('#sample1 input').ptTimeSelect();
+        });
+    </script>
+  </body>
+</html>
